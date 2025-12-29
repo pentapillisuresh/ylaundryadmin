@@ -12,7 +12,7 @@ import OrderList from './screens/OrderList';
 import OrderDetail from './screens/OrderDetail';
 import OrderStatus from './screens/OrderStatus';
 
-import MonthlyBilling from './screens/MonthlyBilling';
+import {MonthlyBilling} from './screens/MonthlyBilling';
 import MonthlyBillDetail from './screens/MonthlyBillDetail';
 import DeliveryPerson from './screens/DeliveryPerson';
 import CategoryManagement from './screens/CategoryManagement';
