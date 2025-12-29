@@ -17,7 +17,7 @@ export const dummyData = {
   customers: [
     {
       id: "CUST-001",
-      name: "John Smith",
+      name: "Suresh Kumar",
       mobile: "+91 9876543210",
       loginMethod: "OTP",
       registrationDate: "2023-10-15",
@@ -25,12 +25,12 @@ export const dummyData = {
       totalOrders: 12,
       totalClothes: 45,
       monthlyBilling: "ON",
-      email: "john@example.com",
+      email: "suresh.kumar@example.com",
       address: "123 Main St, Mumbai"
     },
     {
       id: "CUST-002",
-      name: "Emma Johnson",
+      name: "Priya Sharma",
       mobile: "+91 9876543211",
       loginMethod: "Email",
       registrationDate: "2023-09-22",
@@ -38,12 +38,12 @@ export const dummyData = {
       totalOrders: 8,
       totalClothes: 32,
       monthlyBilling: "OFF",
-      email: "emma@example.com",
+      email: "priya.sharma@example.com",
       address: "456 Park Ave, Delhi"
     },
     {
       id: "CUST-003",
-      name: "Michael Brown",
+      name: "Rahul Patel",
       mobile: "+91 9876543212",
       loginMethod: "OTP",
       registrationDate: "2023-11-05",
@@ -51,12 +51,12 @@ export const dummyData = {
       totalOrders: 5,
       totalClothes: 18,
       monthlyBilling: "ON",
-      email: "michael@example.com",
+      email: "rahul.patel@example.com",
       address: "789 Oak St, Bangalore"
     },
     {
       id: "CUST-004",
-      name: "Sarah Wilson",
+      name: "Anjali Reddy",
       mobile: "+91 9876543213",
       loginMethod: "Email",
       registrationDate: "2023-08-30",
@@ -64,12 +64,12 @@ export const dummyData = {
       totalOrders: 15,
       totalClothes: 62,
       monthlyBilling: "ON",
-      email: "sarah@example.com",
+      email: "anjali.reddy@example.com",
       address: "321 Pine Rd, Chennai"
     },
     {
       id: "CUST-005",
-      name: "David Miller",
+      name: "Vikram Singh",
       mobile: "+91 9876543214",
       loginMethod: "OTP",
       registrationDate: "2023-10-28",
@@ -77,7 +77,7 @@ export const dummyData = {
       totalOrders: 3,
       totalClothes: 11,
       monthlyBilling: "OFF",
-      email: "david@example.com",
+      email: "vikram.singh@example.com",
       address: "654 Maple St, Kolkata"
     }
   ],
@@ -85,7 +85,7 @@ export const dummyData = {
   orders: [
     {
       orderId: "ORD-2409-001",
-      customerName: "John Smith",
+      customerName: "Suresh Kumar",
       customerId: "CUST-001",
       orderSource: "Customer App",
       orderDate: "2023-12-01 10:30",
@@ -108,7 +108,7 @@ export const dummyData = {
     },
     {
       orderId: "ORD-2409-002",
-      customerName: "Emma Johnson",
+      customerName: "Priya Sharma",
       customerId: "CUST-002",
       orderSource: "Delivery App",
       orderDate: "2023-12-01 14:15",
@@ -129,7 +129,7 @@ export const dummyData = {
     },
     {
       orderId: "ORD-2409-003",
-      customerName: "Michael Brown",
+      customerName: "Rahul Patel",
       customerId: "CUST-003",
       orderSource: "Customer App",
       orderDate: "2023-11-30 09:45",
@@ -155,7 +155,9 @@ export const dummyData = {
     {
       billId: "BILL-2023-11",
       customerId: "CUST-001",
-      customerName: "John Smith",
+      customerName: "Suresh Kumar",
+      mobile: "+91 9876543210",
+      companyName: "Suresh Enterprises",
       month: "November 2023",
       status: "Paid",
       totalAmount: 1250,
@@ -164,7 +166,27 @@ export const dummyData = {
       itemDetails: [
         { itemId: "ITEM-2311-001", orderId: "ORD-2311-001", category: "Men's Wear", subCategory: "Shirt", price: 80 },
         { itemId: "ITEM-2311-002", orderId: "ORD-2311-001", category: "Men's Wear", subCategory: "Trouser", price: 120 }
-      ]
+      ],
+      createdAt: "2023-11-30",
+      dueDate: "2023-12-10"
+    },
+    {
+      billId: "BILL-2023-10",
+      customerId: "CUST-002",
+      customerName: "Priya Sharma",
+      mobile: "+91 9876543211",
+      companyName: "Priya Fashion House",
+      month: "October 2023",
+      status: "Pending",
+      totalAmount: 890,
+      items: 8,
+      orders: ["ORD-2310-001", "ORD-2310-002"],
+      itemDetails: [
+        { itemId: "ITEM-2310-001", orderId: "ORD-2310-001", category: "Women's Wear", subCategory: "Saree", price: 150 },
+        { itemId: "ITEM-2310-002", orderId: "ORD-2310-001", category: "Women's Wear", subCategory: "Kurti", price: 90 }
+      ],
+      createdAt: "2023-10-31",
+      dueDate: "2023-11-10"
     }
   ],
   
@@ -232,6 +254,17 @@ export const getData = (key) => {
   }
 };
 
+// Helper function to save data to storage
+export const saveData = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    return true;
+  } catch (error) {
+    console.error('Error saving data:', error);
+    return false;
+  }
+};
+
 // Helper function to get stats
 export const getStats = () => {
   try {
@@ -255,4 +288,26 @@ export const getStats = () => {
       monthlyBillingCustomers: 0
     };
   }
+};
+
+// Helper function to generate next bill ID
+export const generateNextBillId = () => {
+  const bills = getData('monthlyBills') || dummyData.monthlyBills;
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+  const formattedMonth = currentMonth.toString().padStart(2, '0');
+  
+  const currentMonthBills = bills.filter(bill => 
+    bill.billId.includes(`-${currentYear}-${formattedMonth}`)
+  );
+  
+  const nextNumber = currentMonthBills.length + 1;
+  return `BILL-${currentYear}-${formattedMonth}-${nextNumber.toString().padStart(3, '0')}`;
+};
+
+// Helper function to generate item ID
+export const generateItemId = () => {
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 1000);
+  return `ITEM-${timestamp}-${random}`;
 };

@@ -11,7 +11,7 @@ import CustomerDetail from './screens/CustomerDetail';
 import OrderList from './screens/OrderList';
 import OrderDetail from './screens/OrderDetail';
 import OrderStatus from './screens/OrderStatus';
-import PaymentReceipt from './screens/PaymentReceipt';
+
 import MonthlyBilling from './screens/MonthlyBilling';
 import MonthlyBillDetail from './screens/MonthlyBillDetail';
 import DeliveryPerson from './screens/DeliveryPerson';
@@ -87,14 +87,14 @@ function App() {
             </PrivateRoute>
           } />
           
-          <Route path="/payments/:orderId?" element={
+          {/* <Route path="/payments/:orderId?" element={
             <PrivateRoute>
               <>
                 <Sidebar />
                 <PaymentReceipt />
               </>
             </PrivateRoute>
-          } />
+          } /> */}
           
           <Route path="/monthly-billing" element={
             <PrivateRoute>

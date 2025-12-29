@@ -1,163 +1,284 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import Header from '../components/Header';
-import { dummyData } from '../utils/data';
+// Update the handleDownloadPDF function in MonthlyBilling.js
+const handleDownloadPDF = (bill) => {
+  const printWindow = window.open('', '_blank');
+  
+  const currentDate = new Date().toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
 
-const MonthlyBilling = () => {
-  const [customers, setCustomers] = useState(dummyData.customers);
-  const [monthlyBills] = useState(dummyData.monthlyBills);
-  const [selectedMonth, setSelectedMonth] = useState('November 2023');
-  
-  const toggleBilling = (customerId) => {
-    setCustomers(customers.map(customer => {
-      if (customer.id === customerId) {
-        return {
-          ...customer,
-          monthlyBilling: customer.monthlyBilling === 'ON' ? 'OFF' : 'ON'
-        };
-      }
-      return customer;
-    }));
-  };
-  
-  return (
-    <div className="ml-64 p-6">
-      <Header title="Monthly Billing Management" subtitle="Item-based monthly billing system" />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Customer Billing Toggle */}
-        <div className="table-container">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-800">Monthly Billing Customers</h2>
-          </div>
-          <div className="p-6">
-            <div className="mb-4">
-              <p className="text-gray-600 text-sm mb-4">
-                Toggle monthly billing ON/OFF for customers. System will automatically collect delivered orders and existing Item IDs.
-              </p>
+  // Calculate subtotal and tax
+  const subtotal = bill.totalAmount;
+  const tax = Math.round(subtotal * 0.18);
+  const grandTotal = subtotal + tax;
+
+  const content = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>${bill.billId} - Monthly Bill</title>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+          font-family: 'Inter', Arial, sans-serif; 
+          padding: 20px;
+          background: #ffffff;
+          color: #333;
+        }
+        .invoice-container {
+          max-width: 800px;
+          margin: 0 auto;
+          background: white;
+        }
+        .header { 
+          text-align: center;
+          padding: 30px 0;
+          border-bottom: 3px solid #3B82F6;
+          margin-bottom: 30px;
+        }
+        .company-name {
+          font-size: 36px;
+          font-weight: 700;
+          color: #3B82F6;
+          margin-bottom: 10px;
+          letter-spacing: 1px;
+        }
+        .company-tagline {
+          font-size: 16px;
+          color: #666;
+          margin-bottom: 20px;
+        }
+        .invoice-title {
+          font-size: 28px;
+          color: #333;
+          font-weight: 600;
+          margin: 20px 0;
+        }
+        .bill-info {
+          background: #f8fafc;
+          padding: 20px;
+          border-radius: 10px;
+          margin-bottom: 30px;
+          border: 1px solid #e2e8f0;
+        }
+        .info-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 15px;
+        }
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 8px;
+        }
+        .info-label {
+          font-weight: 600;
+          color: #555;
+          font-size: 14px;
+        }
+        .info-value {
+          color: #333;
+          font-size: 14px;
+        }
+        .items-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 25px 0;
+        }
+        .items-table th {
+          background: #3B82F6;
+          color: white;
+          text-align: left;
+          padding: 15px;
+          font-weight: 600;
+        }
+        .items-table td {
+          padding: 15px;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .items-table tr:nth-child(even) {
+          background: #f8fafc;
+        }
+        .total-section {
+          background: #f8fafc;
+          padding: 25px;
+          border-radius: 10px;
+          margin-top: 30px;
+          border: 1px solid #e2e8f0;
+        }
+        .total-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 10px 0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .total-row:last-child {
+          border-bottom: none;
+          font-size: 20px;
+          font-weight: 700;
+          color: #3B82F6;
+          margin-top: 10px;
+        }
+        .footer {
+          margin-top: 40px;
+          padding-top: 20px;
+          border-top: 2px dashed #ddd;
+          text-align: center;
+          color: #666;
+          font-size: 14px;
+        }
+        .status-badge {
+          display: inline-block;
+          padding: 6px 15px;
+          border-radius: 20px;
+          font-size: 14px;
+          font-weight: 600;
+        }
+        .status-paid {
+          background: #d1fae5;
+          color: #065f46;
+        }
+        .status-pending {
+          background: #fef3c7;
+          color: #92400e;
+        }
+        .status-overdue {
+          background: #fee2e2;
+          color: #991b1b;
+        }
+        @media print {
+          body { padding: 0; }
+          .no-print { display: none; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="invoice-container">
+        <div class="header">
+          <div class="company-name">LAUNDRY SERVICES</div>
+          <div class="company-tagline">Professional Laundry & Dry Cleaning</div>
+          <div class="invoice-title">MONTHLY BILL INVOICE</div>
+        </div>
+        
+        <div class="bill-info">
+          <div class="info-grid">
+            <div>
+              <div class="info-row">
+                <span class="info-label">Bill ID:</span>
+                <span class="info-value">${bill.billId}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Customer:</span>
+                <span class="info-value">${bill.customerName}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Company:</span>
+                <span class="info-value">${bill.companyName || 'N/A'}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Mobile:</span>
+                <span class="info-value">${bill.mobile}</span>
+              </div>
             </div>
-            
-            <div className="space-y-4">
-              {customers.map((customer) => (
-                <div key={customer.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <h3 className="font-medium">{customer.name}</h3>
-                    <p className="text-sm text-gray-600">{customer.mobile}</p>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <span className="text-sm text-gray-600">
-                      {customer.totalOrders} orders, {customer.totalClothes} items
-                    </span>
-                    <div
-                      onClick={() => toggleBilling(customer.id)}
-                      className={`w-12 h-6 rounded-full cursor-pointer transition-all ${
-                        customer.monthlyBilling === 'ON' ? 'bg-green-500' : 'bg-gray-300'
-                      }`}
-                    >
-                      <div className={`bg-white w-4 h-4 rounded-full mt-1 transition-all ${
-                        customer.monthlyBilling === 'ON' ? 'ml-7' : 'ml-1'
-                      }`} />
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div>
+              <div class="info-row">
+                <span class="info-label">Month:</span>
+                <span class="info-value">${bill.month}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Bill Date:</span>
+                <span class="info-value">${bill.createdAt}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Status:</span>
+                <span class="info-value">
+                  <span class="status-badge status-${bill.status.toLowerCase()}">
+                    ${bill.status}
+                  </span>
+                </span>
+              </div>
             </div>
           </div>
         </div>
         
-        {/* Monthly Bills */}
-        <div className="table-container">
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-gray-800">Monthly Bills</h2>
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="input-field py-2 text-sm"
-              >
-                <option>November 2023</option>
-                <option>October 2023</option>
-                <option>September 2023</option>
-              </select>
-            </div>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Item ID</th>
+              <th>Item Name</th>
+              <th>Quantity</th>
+              <th>Unit Price (₹)</th>
+              <th>Total (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${bill.itemDetails.map(item => `
+              <tr>
+                <td>${item.itemId}</td>
+                <td>${item.itemName || item.subCategory}</td>
+                <td>${item.quantity || 1}</td>
+                <td>₹${item.price}</td>
+                <td>₹${(item.price * (item.quantity || 1)).toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        
+        <div class="total-section">
+          <div class="total-row">
+            <span>Subtotal:</span>
+            <span>₹${subtotal.toFixed(2)}</span>
           </div>
-          <div className="p-6">
-            {monthlyBills.length > 0 ? (
-              <div className="space-y-4">
-                {monthlyBills.map((bill) => (
-                  <div key={bill.billId + bill.customerId} className="p-4 border border-gray-200 rounded-lg hover:border-gray-300">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="font-medium">{bill.customerName}</h3>
-                        <p className="text-sm text-gray-600">Bill ID: {bill.billId}</p>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        bill.status === 'Paid' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {bill.status}
-                      </span>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-600">Month:</span>
-                        <p className="font-medium">{bill.month}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Total Amount:</span>
-                        <p className="font-medium">₹{bill.totalAmount}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Orders:</span>
-                        <p className="font-medium">{bill.orders.length}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Items:</span>
-                        <p className="font-medium">{bill.items}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4">
-                      <Link
-                        to={`/monthly-bill/${bill.billId}`}
-                        className="text-primary hover:text-opacity-80 font-medium text-sm"
-                      >
-                        View Bill Details →
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                No monthly bills generated for {selectedMonth}
-              </div>
-            )}
+          <div class="total-row">
+            <span>GST (18%):</span>
+            <span>₹${tax.toFixed(2)}</span>
           </div>
+          <div class="total-row">
+            <span>Grand Total:</span>
+            <span>₹${grandTotal.toFixed(2)}</span>
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p><strong>Thank you for your business!</strong></p>
+          <p>Laundry Services • 123 Main Street • Mumbai • Phone: +91 9876543210</p>
+          <p>Email: billing@laundryservice.com • GSTIN: 27AABCU9603R1ZX</p>
+          <p>Invoice generated on: ${currentDate}</p>
+          <p style="font-size: 12px; color: #888; margin-top: 10px;">
+            This is a computer generated invoice and does not require a signature.
+          </p>
         </div>
       </div>
       
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
-        <div className="flex items-start">
-          <div className="text-blue-800 text-lg mr-3">📅</div>
-          <div>
-            <h3 className="font-medium text-blue-900">Monthly Bill Generation Process</h3>
-            <p className="text-blue-700 text-sm mt-1">
-              1. Admin toggles Monthly Billing ON for customer<br/>
-              2. System automatically collects:<br/>
-                 • Delivered orders only<br/>
-                 • Existing Item IDs (no new IDs created)<br/>
-              3. Creates Monthly Bill ID only<br/>
-              4. Item IDs stay same as app-generated<br/>
-              <span className="font-bold mt-2 block">✅ No form submission<br/>❌ No ID generation in admin panel</span>
-            </p>
-          </div>
-        </div>
+      <div class="no-print" style="margin-top: 30px; text-align: center;">
+        <button onclick="window.print()" style="
+          padding: 12px 30px;
+          background: #3B82F6;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+        ">
+          📄 Print / Save as PDF
+        </button>
+        <p style="margin-top: 10px; color: #666; font-size: 14px;">
+          Click the button above to print or save as PDF
+        </p>
       </div>
-    </div>
-  );
+    </body>
+    </html>
+  `;
+  
+  printWindow.document.write(content);
+  printWindow.document.close();
+  
+  printWindow.onload = function() {
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
+  };
 };
-
-export default MonthlyBilling;
